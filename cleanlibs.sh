@@ -6,7 +6,7 @@ TARGET_DIR="./build/libs"
 # Check if the directory exists
 if [ ! -d "$TARGET_DIR" ]; then
   echo "The directory $TARGET_DIR does not exist."
-  exit 1
+  exit 0
 fi
 
 # Delete all .jar files in the directory

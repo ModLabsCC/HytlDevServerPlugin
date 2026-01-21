@@ -7,6 +7,7 @@ import java.util.TimeZone
 plugins {
     val kotlin_version: String by System.getProperties()
     kotlin("jvm").version(kotlin_version)
+    kotlin("plugin.serialization").version(kotlin_version)
 
     id("com.gradleup.shadow") version "8.3.6"
 }
@@ -16,7 +17,7 @@ val ktor_version: String by project
 
 group = "cc.modlabs"
 version = System.getenv("VERSION_OVERRIDE") ?: Calendar.getInstance(TimeZone.getTimeZone("UTC")).run {
-    "${get(Calendar.YEAR)}.${get(Calendar.MONTH) + 1}.${get(Calendar.DAY_OF_MONTH)}.${
+    "${get(Calendar.YEAR)}.${get(Calendar.MONTH) + 1}.${get(Calendar.DAY_OF_MONTH)}-${
         String.format("%02d%02d", get(Calendar.HOUR_OF_DAY), get(Calendar.MINUTE))
     }"
 }
@@ -29,7 +30,9 @@ val shadowDependencies = listOf(
     "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version",
     "io.ktor:ktor-client-core:$ktor_version",
-    "io.ktor:ktor-client-cio:$ktor_version"
+    "io.ktor:ktor-client-cio:$ktor_version",
+    "io.ktor:ktor-client-content-negotiation:$ktor_version",
+    "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
     //"cc.modlabs:ktale:${project.ext["ktaleVersion"] as String}",
     //"cc.modlabs:KlassicX:2025.12.4.1928"
 )

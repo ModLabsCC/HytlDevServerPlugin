@@ -5,7 +5,7 @@ set "TARGET_DIR=.\build\libs"
 REM Check if the directory exists
 if not exist "%TARGET_DIR%" (
     echo The directory %TARGET_DIR% does not exist.
-    exit /b 1
+    exit /b 0
 )
 
 REM Delete all .jar files in the directory

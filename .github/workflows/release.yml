@@ -49,7 +49,9 @@ jobs:
             ls -la build/libs || true
             exit 1
           fi
-          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+          OUT="build/libs/HytlDevServerPlugin.jar"
+          cp "$JAR" "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

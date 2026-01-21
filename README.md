@@ -26,16 +26,12 @@ Run from **server console** (recommended so the secret never appears in chat):
 /hytl setup <serverId> <serverSecret>
 ```
 
-If your dashboard provides a full backend URL (like ngrok), use the 3-arg form:
-
-```text
-/hytl setup <serverId> <serverSecret> <backendBaseUrl>
-```
+> You would typicaly get this command while registering your server at https://hytl.dev
 
 Example:
 
 ```text
-/hytl setup plugin-dev-1 c661ebfc7470539eb683a11ab4f635641d4087291cb8ec8c https://hytl.dev/api/plugin
+/hytl setup plugin-dev-1 c661ebfc7470539eb683a11ab4f635641d4087291cb8ec8c
 ```
 
 ### Reload without restarting
@@ -110,6 +106,8 @@ If you want to disable rewards entirely (and keep votes pending on HYTL):
 
 You can hook into the vote reward flow by providing a `VoteRewarder` implementation.
 If present, the HYTL plugin calls your rewarder for each pending vote. If your rewarder returns `true`, the plugin ACKs the vote to HYTL.
+
+> We will provide a maven hosted version soon. For now depend on the jar
 
 ### Public API (Java-friendly)
 

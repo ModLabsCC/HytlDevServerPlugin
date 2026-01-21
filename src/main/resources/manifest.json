@@ -1,0 +1,21 @@
+{
+  "Group": "ModLabs",
+  "Name": "$name",
+  "Version": "$version",
+  "Description": "Utility plugin for the htyl.dev serverlist",
+  "Authors": [
+    {
+      "Name": "ModLabs",
+      "Email": "contact@modlabs.cc",
+      "Url": "https://modlabs.cc/"
+    }
+  ],
+  "Website": "https://hytl.dev/",
+  "Main": "cc.modlabs.HytlDev",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "IncludesAssetPack": false,
+  "SubPlugins": []
+}

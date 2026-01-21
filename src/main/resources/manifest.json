@@ -2,7 +2,7 @@
   "Group": "ModLabs",
   "Name": "$name",
   "Version": "$version",
-  "Description": "Utility plugin for the htyl.dev serverlist",
+  "Description": "Utility plugin for the Hytl.dev serverlist",
   "Authors": [
     {
       "Name": "ModLabs",

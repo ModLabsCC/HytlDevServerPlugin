@@ -27,7 +27,7 @@ jobs:
         id: ver
         shell: bash
         run: |
-          VERSION="$(date -u +%Y.%m.%d.%H%M)"
+          VERSION="$(date -u +%Y.%m.%d-%H%M)"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 

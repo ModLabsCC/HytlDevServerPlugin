@@ -50,7 +50,8 @@ data class ModEntry(
 
 @Serializable
 data class PendingVotesResponse(
-    val serverId: String,
+    // Some backends may omit serverId; keep parsing tolerant.
+    val serverId: String? = null,
     val events: List<VoteEvent> = emptyList()
 )
 

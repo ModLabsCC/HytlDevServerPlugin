@@ -3,12 +3,15 @@ package cc.modlabs
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit
 import com.hypixel.hytale.server.core.HytaleServer
+import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent
+import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent
 import io.ktor.client.HttpClient
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import cc.modlabs.api.HytlDevApi
 import cc.modlabs.commands.HytlRootCommand
+import java.util.concurrent.atomic.AtomicLong
 
 class HytlDev(init: JavaPluginInit) : JavaPlugin(init) {
 
@@ -21,6 +24,8 @@ class HytlDev(init: JavaPluginInit) : JavaPlugin(init) {
     private var heartbeatFuture: ScheduledFuture<*>? = null
     private var heartbeatBackoff: ExponentialBackoff? = null
     private var heartbeatService: HeartbeatService? = null
+    private var heartbeatNudgeFuture: ScheduledFuture<*>? = null
+    private val lastHeartbeatNudgeAtMs = AtomicLong(0L)
 
     private var voteFuture: ScheduledFuture<*>? = null
     private var voteBackoff: ExponentialBackoff? = null
@@ -30,6 +35,14 @@ class HytlDev(init: JavaPluginInit) : JavaPlugin(init) {
     override fun setup() {
         config = HytlConfigIO.loadOrCreate(dataDirectory)
         onlinePlayers.register(this)
+
+        // Trigger an extra heartbeat shortly after join/leave (coalesced with 1s min cooldown).
+        eventRegistry.register(PlayerConnectEvent::class.java) {
+            requestHeartbeatNudge()
+        }
+        eventRegistry.register(PlayerDisconnectEvent::class.java) {
+            requestHeartbeatNudge()
+        }
 
         logger.info("HYTL plugin config: ${HytlConfigIO.configPath(dataDirectory)}")
         if (config.serverId.isBlank() || config.serverSecret.isBlank()) {
@@ -100,6 +113,8 @@ class HytlDev(init: JavaPluginInit) : JavaPlugin(init) {
     private fun stopRuntime(sendFinalHeartbeat: Boolean) {
         heartbeatFuture?.cancel(false)
         heartbeatFuture = null
+        heartbeatNudgeFuture?.cancel(false)
+        heartbeatNudgeFuture = null
         voteFuture?.cancel(false)
         voteFuture = null
 
@@ -120,6 +135,33 @@ class HytlDev(init: JavaPluginInit) : JavaPlugin(init) {
 
         http?.close()
         http = null
+    }
+
+    /**
+     * Request an additional heartbeat outside the normal schedule.
+     * This is coalesced with a 1s minimum cooldown to avoid spamming.
+     */
+    private fun requestHeartbeatNudge() {
+        if (!running.get()) return
+        if (config.serverId.isBlank() || config.serverSecret.isBlank()) return
+        if (heartbeatService == null) return
+
+        val now = System.currentTimeMillis()
+        val last = lastHeartbeatNudgeAtMs.get()
+        val elapsed = now - last
+        val delayMs = (1_000L - elapsed).coerceAtLeast(0L)
+
+        // Coalesce multiple join/leave events into a single scheduled send.
+        heartbeatNudgeFuture?.cancel(false)
+        heartbeatNudgeFuture = HytaleServer.SCHEDULED_EXECUTOR.schedule({
+            val now2 = System.currentTimeMillis()
+            lastHeartbeatNudgeAtMs.set(now2)
+            val svc = heartbeatService ?: return@schedule
+            // Fire-and-forget; do not disturb the main heartbeat schedule/backoff.
+            svc.sendOnce { t ->
+                logger.debug("Heartbeat nudge failed: ${t.message}")
+            }
+        }, delayMs, TimeUnit.MILLISECONDS)
     }
 
     private fun scheduleHeartbeat(delaySeconds: Long) {
